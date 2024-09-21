@@ -1,6 +1,6 @@
 https://developers.google.com/gmail/api/quickstart/python
 
-# Python quickstart 
+# Python quickstart
 
 bookmark_border
 Quickstarts explain how to set up and run an app that calls a Google Workspace API.
@@ -10,12 +10,14 @@ Google Workspace quickstarts use the API client libraries to handle some details
 Create a Python command-line application that makes requests to the Gmail API.
 
 ## Objectives
+
 Set up your environment.
 Install the client library.
 Set up the sample.
 Run the sample.
 
 ## Prerequisites
+
 To run this quickstart, you need the following prerequisites:
 
 Python 3.10.7 or greater
@@ -24,15 +26,18 @@ A Google Cloud project.
 A Google account with Gmail enabled.
 
 ## Set up your environment
+
 To complete this quickstart, set up your environment.
 
 ## Enable the API
+
 Before using Google APIs, you need to turn them on in a Google Cloud project. You can turn on one or more APIs in a single Google Cloud project.
 In the Google Cloud console, enable the Gmail API.
 
 Enable the API
 
 ## Configure the OAuth consent screen
+
 If you're using a new Google Cloud project to complete this quickstart, configure the OAuth consent screen and add yourself as a test user. If you've already completed this step for your Cloud project, skip to the next section.
 
 In the Google Cloud console, go to Menu menu > APIs & Services > OAuth consent screen.
@@ -44,8 +49,8 @@ For now, you can skip adding scopes and click Save and Continue. In the future, 
 
 Review your app registration summary. To make changes, click Edit. If the app registration looks OK, click Back to Dashboard.
 
-
 ## Authorize credentials for a desktop application
+
 To authenticate end users and access user data in your app, you need to create one or more OAuth 2.0 Client IDs. A client ID is used to identify a single app to Google's OAuth servers. If your app runs on multiple platforms, you must create a separate client ID for each platform.
 In the Google Cloud console, go to Menu menu > APIs & Services > Credentials.
 Go to Credentials
@@ -58,20 +63,21 @@ Go to Credentials
 6. Save the downloaded JSON file as credentials.json, and move the file to your working directory.
 
 ## Install the Google client library
+
 - Install the Google client library for Python:
 
-````
+````bash
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ````
 
 ## Configure the sample
+
 1. In your working directory, create a file named quickstart.py.
 2. Include the following code in quickstart.py:
 
-
 gmail/quickstart/quickstart.pyView on GitHub
 
-````
+````python
 import os.path
 
 from google.auth.transport.requests import Request
