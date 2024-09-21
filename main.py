@@ -44,12 +44,37 @@ def main():
       return
     print("Labels:")
     for label in labels:
-      print(label["name"])
+      print(label["id"] + ": " +label["name"])
 
+    query_emails_by_label(service, "me", "Label_15")
+  
   except HttpError as error:
     # TODO(developer) - Handle errors from gmail API.
     print(f"An error occurred: {error}")
 
+
+def query_emails_by_label(service, user_id, label_id):
+    try:
+        response = service.users().messages().list(userId=user_id, labelIds=[label_id]).execute()
+        messages = response.get('messages', [])
+        
+        if not messages:
+            print('No messages found.')
+        else:
+            print('Messages:')
+            for message in messages:
+                msg_id = message['id']
+                msg = service.users().messages().get(userId=user_id, id=msg_id).execute()
+                
+                print(f"Message ID: {msg_id}")
+                print(f"Snippet: {msg['snippet']}")
+                
+                # Print the email body
+                for part in msg['payload']['parts']:
+                    if part['mimeType'] == 'text/plain':
+                        print(f"Body: {part['body']['data']}")
+    except HttpError as error:
+        print(f"An error occurred: {error}")
 
 if __name__ == "__main__":
   main()
