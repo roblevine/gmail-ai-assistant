@@ -1,6 +1,7 @@
 import base64
 from datetime import datetime
 import os.path
+import logging
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -31,20 +32,26 @@ def get_credentials():
     return creds
 
 def fetch_labels(service):
-    try:
-        # Call the Gmail API
-        results = service.users().labels().list(userId="me").execute()
-        labels = results.get("labels", [])
+  try:
+    # Call the Gmail API
+    results = service.users().labels().list(userId="me").execute()
+    labels = results.get("labels", [])
 
-        if not labels:
-            print("No labels found.")
-            return
-        print("Labels:")
-        for label in labels:
-            print(label["id"] + ": " + label["name"])
-    except HttpError as error:
-        # TODO: Handle errors from Gmail API.
-        print(f"An error occurred: {error}")
+    if not labels:
+      logging.info("No labels found.")
+      return []
+    
+    logging.info(f"Labels count: {len(labels)}")
+
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+      logging.debug("Labels:")
+      for label in labels:
+        logging.debug(f"{label['id']}: {label['name']}")
+    
+    return labels
+  except HttpError as error:
+    print(f"An error occurred: {error}")
+    return []
 
 def query_emails_by_label(service, user_id, label_id):
     try:
@@ -76,10 +83,11 @@ def query_emails_by_label(service, user_id, label_id):
         print(f"An error occurred: {error}")
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     creds = get_credentials()
     service = build("gmail", "v1", credentials=creds)
     fetch_labels(service)
-    query_emails_by_label(service, "me", "Label_15")
+   # query_emails_by_label(service, "me", "Label_15")
 
 if __name__ == "__main__":
     main()
