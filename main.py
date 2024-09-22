@@ -57,50 +57,57 @@ def fetch_labels(service):
 
 
 def query_emails_by_label(service, user_id, label_id, max_results=5):
-  try:
-    response = (
-      service.users()
-      .messages()
-      .list(userId=user_id, labelIds=[label_id], maxResults=max_results)
-      .execute()
-    )
-    messages = response.get("messages", [])
-
-    if not messages:
-      logging.info("No messages found.")
-    else:
-      logging.info(f"Messages count: {len(messages)}")
-      if logging.getLogger().isEnabledFor(logging.DEBUG):
-        logging.debug("Messages:")
-      for message in messages:
-        msg_id = message["id"]
-
-        msg = (
-          service.users().messages().get(userId=user_id, id=msg_id).execute()
+    try:
+        response = (
+            service.users()
+            .messages()
+            .list(userId=user_id, labelIds=[label_id], maxResults=max_results)
+            .execute()
         )
-        internal_date = msg["internalDate"]
-        internal_date_as_string = datetime.fromtimestamp(
-          int(internal_date) / 1000
-        ).strftime("%Y-%m-%d %H:%M:%S")
-        headers = msg["payload"]["headers"]
-        subject = next(
-          (header["value"] for header in headers if header["name"] == "Subject"),
-          "No Subject"
-        )
+        messages = response.get("messages", [])
 
-        logging.info(f"Message ID: {msg_id}, Date: {internal_date_as_string}, Subject: {subject}")
+        if not messages:
+            logging.info("No messages found.")
+            return []
+        else:
+            logging.info(f"Messages count: {len(messages)}")
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                logging.debug("Messages:")
 
-        # Print the email body only if debug logging is enabled
-        if logging.getLogger().isEnabledFor(logging.DEBUG):
-          logging.debug("--")
-          for part in msg["payload"]["parts"]:
-            if part["mimeType"] == "text/plain":
-              bodyDataBase64 = part["body"]["data"]
-              bodyData = base64.urlsafe_b64decode(bodyDataBase64).decode("utf-8")
-              logging.debug(f"Body: {bodyData}")
-  except HttpError as error:
-    logging.error(f"An error occurred: {error}")
+            emails = []
+            for message in messages:
+                msg_id = message["id"]
 
+                msg = (
+                    service.users().messages().get(userId=user_id, id=msg_id).execute()
+                )
+                internal_date = msg["internalDate"]
+                internal_date_as_string = datetime.fromtimestamp(
+                    int(internal_date) / 1000
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                headers = msg["payload"]["headers"]
+                subject = next(
+                    (header["value"] for header in headers if header["name"] == "Subject"),
+                    "No Subject"
+                )
+
+                bodyData = "(no content)"
+                for part in msg["payload"]["parts"]:
+                  if part["mimeType"] == "text/plain":
+                    bodyDataBase64 = part["body"]["data"]
+                    bodyData = base64.urlsafe_b64decode(bodyDataBase64).decode("utf-8")
+
+                emails.append({
+                    "id": msg_id,
+                    "internal_date": internal_date_as_string,
+                    "subject": subject,
+                    "body": bodyData
+                })
+
+            return emails
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return []
 
 def main():
     logging.basicConfig(
@@ -110,8 +117,12 @@ def main():
     service = build("gmail", "v1", credentials=creds)
     fetch_labels(service)
 
-
-    query_emails_by_label(service, "me", "Label_15")
+    emails = query_emails_by_label(service, "me", "Label_15")
+    for email in emails:
+        logging.info(f"Email ID: {email['id']}, Internal Date: {email['internal_date']}, Subject: {email['subject']}")
+        if (logging.getLogger().isEnabledFor(logging.DEBUG)):
+          logging.debug(f"Body: {email['body']}")
+          logging.debug("----------------------------------------------------")
 
 if __name__ == "__main__":
     main()
