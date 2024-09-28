@@ -2,6 +2,7 @@ import base64
 from datetime import datetime
 import os.path
 import logging
+import json
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -56,7 +57,7 @@ def fetch_labels(service):
         return []
 
 
-def query_emails_by_label(service, user_id, label_id, max_results=5):
+def query_emails_by_label(service, user_id, label_id, max_results=10):
     try:
         response = (
             service.users()
@@ -75,6 +76,7 @@ def query_emails_by_label(service, user_id, label_id, max_results=5):
                 logging.debug("Messages:")
 
             emails = []
+            msgs = []
             for message in messages:
                 msg_id = message["id"]
 
@@ -93,9 +95,9 @@ def query_emails_by_label(service, user_id, label_id, max_results=5):
 
                 bodyData = "(no content)"
                 for part in msg["payload"]["parts"]:
-                  if part["mimeType"] == "text/plain":
-                    bodyDataBase64 = part["body"]["data"]
-                    bodyData = base64.urlsafe_b64decode(bodyDataBase64).decode("utf-8")
+                    if part["mimeType"] == "text/plain":
+                        bodyDataBase64 = part["body"]["data"]
+                        bodyData = base64.urlsafe_b64decode(bodyDataBase64).decode("utf-8")
 
                 emails.append({
                     "id": msg_id,
@@ -104,10 +106,24 @@ def query_emails_by_label(service, user_id, label_id, max_results=5):
                     "body": bodyData
                 })
 
+                # Add the raw msg to the msgs list
+                msgs.append(msg)
+
+            #save_raw_emails_to_json(msgs)
+
             return emails
+
     except HttpError as error:
         print(f"An error occurred: {error}")
         return []
+
+def save_raw_emails_to_json(msgs):
+    # Serialize all raw msgs to a single JSON file
+    json_file_path = os.path.abspath("raw_emails.json")
+    with open(json_file_path, "w") as json_file:
+        json.dump(msgs, json_file, indent=4)
+
+    logging.info(f"Serialized raw emails to: {json_file_path}")
 
 def main():
     logging.basicConfig(

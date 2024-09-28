@@ -242,3 +242,4 @@ fabric.properties
 client_secrets.json
 token.json
 credentials.json
+raw_emails.json
