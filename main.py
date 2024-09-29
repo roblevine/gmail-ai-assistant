@@ -109,7 +109,7 @@ def query_emails_by_label(service, user_id, label_id, max_results=10):
                 # Add the raw msg to the msgs list
                 msgs.append(msg)
 
-            #save_raw_emails_to_json(msgs)
+            save_raw_emails_to_json(msgs)
 
             return emails
 
@@ -125,6 +125,46 @@ def save_raw_emails_to_json(msgs):
 
     logging.info(f"Serialized raw emails to: {json_file_path}")
 
+def query_emails_by_label_from_file(user_id, label_id, max_results=10):
+    try:
+        with open("raw_emails.json", "r") as json_file:
+            msgs = json.load(json_file)
+
+        emails = []
+        for msg in msgs:
+            if label_id in msg.get("labelIds", []):
+                internal_date = msg["internalDate"]
+                internal_date_as_string = datetime.fromtimestamp(
+                    int(internal_date) / 1000
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                headers = msg["payload"]["headers"]
+                subject = next(
+                    (header["value"] for header in headers if header["name"] == "Subject"),
+                    "No Subject"
+                )
+
+                bodyData = "(no content)"
+                for part in msg["payload"]["parts"]:
+                    if part["mimeType"] == "text/plain":
+                        bodyDataBase64 = part["body"]["data"]
+                        bodyData = base64.urlsafe_b64decode(bodyDataBase64).decode("utf-8")
+
+                emails.append({
+                    "id": msg["id"],
+                    "internal_date": internal_date_as_string,
+                    "subject": subject,
+                    "body": bodyData
+                })
+
+                if len(emails) >= max_results:
+                    break
+
+        return emails
+
+    except Exception as error:
+        print(f"An error occurred: {error}")
+        return []
+    
 def main():
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -133,7 +173,8 @@ def main():
     service = build("gmail", "v1", credentials=creds)
     fetch_labels(service)
 
-    emails = query_emails_by_label(service, "me", "Label_15")
+    #emails = query_emails_by_label(service, "me", "Label_15")
+    emails = query_emails_by_label_from_file("me", "Label_15", 50)
     for email in emails:
         logging.info(f"Email ID: {email['id']}, Internal Date: {email['internal_date']}, Subject: {email['subject']}")
         if (logging.getLogger().isEnabledFor(logging.DEBUG)):
