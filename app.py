@@ -5,40 +5,21 @@ import openai
 import os
 from dotenv import load_dotenv, find_dotenv
 
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+
 app = Flask(__name__)
 
-# Set your OpenAI API key
-openai.api_key = 'your-openai-api-key'
+def create_app(test_config=None):
+    app = Flask(__name__, instance_relative_config=True)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
 
-@app.route('/chat', methods=['POST'])
-def chat():
+    @app.route('/')
+    def home():
+        return render_template('index.html')
 
-    user_input = request.form['user_input']
-
-    
-    _ = load_dotenv(find_dotenv())
-
-    openai.api_key  = os.getenv('OPENAI_API_KEY')
-    client = openai.OpenAI(
-    # This is the default and can be omitted
-    #api_key=os.environ.get("OPENAI_API_KEY"),
-)
-    user_input = request.form['user_input']
-    completion = client.chat.completions.create(
-    messages=[
-        {
-            "role": "user",
-            "content": user_input,
-        }
-    ],
-    model="gpt-3.5-turbo",
-)
-    answer = completion.choices[0].message.content
-    return jsonify({'response': answer})
+    return app
 
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)
