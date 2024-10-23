@@ -28,7 +28,10 @@ def create_app(test_config=None):
         [
             (
                 "system",
-                "You are a helpful assistant that can answer questions about anything. You will keep answers relatively short, without being so terse as to be rude. You will also provide a source for your information. If you don't know the answer, you will say so.",
+                "You are a helpful assistant that can answer questions about anything. "
+                + "You will keep answers relatively short, without being so terse as to be rude. "
+                + "You will also provide a source for your information. "
+                + "If you don't know the answer, you will say so. "
             ),
             MessagesPlaceholder(variable_name="messages"),
         ]
