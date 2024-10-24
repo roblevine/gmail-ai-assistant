@@ -1,9 +1,11 @@
 import os
 import logging
+import json
+import time
 
 from dotenv import load_dotenv, find_dotenv
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 
 import openai
 from langchain_openai import ChatOpenAI
@@ -71,7 +73,41 @@ def create_app(test_config=None):
     return app
 
 
+def create_app2(test_config=None):
+    app = Flask(__name__)
+    
+    _ = load_dotenv(find_dotenv())
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+    
+    model = ChatOpenAI(model="gpt-3.5-turbo", streaming=True)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a helpful assistant that provides concise responses."),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+    
+    @app.route('/')
+    def home():
+        return render_template('index.html')
+    
+    def generate_response(user_input):
+        messages = [HumanMessage(user_input)]
+        chain = prompt | model
+        
+        for chunk in chain.stream({"messages": messages}):
+            yield f"data: {json.dumps({'response': chunk.content})}\n\n"
+            time.sleep(0.1)
+    
+    @app.route('/stream', methods=['POST'])
+    def stream():
+        user_input = request.form['user_input']
+        return Response(
+            generate_response(user_input),
+            mimetype='text/event-stream'
+        )
+        
+    return app
 
 if __name__ == '__main__':
-    app = create_app()
+    app = create_app2()
     app.run(debug=True)
