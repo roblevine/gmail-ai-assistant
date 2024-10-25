@@ -8,11 +8,13 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, jsonify, render_template, Response
 
 import openai
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
+
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 
 logger = logging.getLogger('.')
 logger.setLevel('DEBUG')
@@ -39,7 +41,8 @@ def create_app(test_config=None):
         ]
     )
 
-    model = ChatOpenAI(model="gpt-3.5-turbo")
+    #model = ChatOpenAI(model="gpt-3.5-turbo")
+    model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
 
     # Define the function that calls the model
     def call_model(state: MessagesState):

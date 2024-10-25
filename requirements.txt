@@ -8,3 +8,4 @@ openai
 langchain-core
 langgraph
 langchain-openai
+langchain-anthropic
