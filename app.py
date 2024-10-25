@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify, render_template, Response
 
 import openai
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
@@ -56,6 +56,7 @@ def create_app(test_config=None):
     chat_app = workflow.compile(checkpointer=memory)
 
     config = {"configurable": {"thread_id": "abc345"}}
+    language = "English"
 
     @app.route('/')
     def home():
@@ -69,11 +70,29 @@ def create_app(test_config=None):
         answer = output["messages"][-1].content
         
         return jsonify({'response': answer})
+
+
+    def generate_response(user_input):
+        messages = [HumanMessage(user_input)]
+        
+        for chunk, metadata in chat_app.stream(
+            {"messages": messages, "language": language},
+            config,
+            stream_mode="messages",
+        ):
+            if isinstance(chunk, AIMessage):  # Filter to just model responses
+                yield f"data: {json.dumps({'response': chunk.content})}\n\n"
+                time.sleep(0.1)
+
+    @app.route('/stream', methods=['POST'])
+    def stream():
+        user_input = request.form['user_input']
+        return Response(
+            generate_response(user_input),
+            mimetype='text/event-stream'
+        )
       
     return app
-
-
-def create_app2(test_config=None):
     app = Flask(__name__)
     
     _ = load_dotenv(find_dotenv())
@@ -92,11 +111,19 @@ def create_app2(test_config=None):
     
     def generate_response(user_input):
         messages = [HumanMessage(user_input)]
+
+
+
+        
         chain = prompt | model
         
         for chunk in chain.stream({"messages": messages}):
             yield f"data: {json.dumps({'response': chunk.content})}\n\n"
             time.sleep(0.1)
+    
+
+
+
     
     @app.route('/stream', methods=['POST'])
     def stream():
@@ -109,5 +136,5 @@ def create_app2(test_config=None):
     return app
 
 if __name__ == '__main__':
-    app = create_app2()
+    app = create_app()
     app.run(debug=True)
