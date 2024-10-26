@@ -42,10 +42,10 @@ def create_app(test_config=None):
         ]
     )
 
-    #model = ChatOpenAI(model="gpt-3.5-turbo")
+    model = ChatOpenAI(model="gpt-3.5-turbo")
     #model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
-    ollama_url = os.getenv("OLLAMA_URL")
-    model = OllamaLLM(model="llama3", base_url=ollama_url)
+    #ollama_url = os.getenv("OLLAMA_URL")
+    #model = OllamaLLM(model="llama3", base_url=ollama_url)
 
     # Define the function that calls the model
     def call_model(state: MessagesState):
@@ -79,16 +79,23 @@ def create_app(test_config=None):
 
     def generate_response(user_input):
         messages = [HumanMessage(user_input)]    
-        for chunk in chat_app.stream(
-            {"messages": messages},
-            config,
-        ):
-            #if isinstance(chunk, AIMessage):  # Filter to just model responses
-             #   yield f"data: {json.dumps({'response': chunk.content})}\n\n"
-        #        yield f"data: {json.dumps({'response': chunk.messages[-1]})}\n\n"
-              #  print(chunk['model']['message'][-1])
+
+        if (type(model).__name__ == 'OllamaLLM'):
+            for chunk in chat_app.stream(
+                {"messages": messages},
+                config,
+            ):
                 yield f"data: {json.dumps({'response': chunk['model']['messages']})}\n\n"
                 time.sleep(0.1)
+        else:
+            for chunk, metadata in chat_app.stream(
+                {"messages": messages, "language": language},
+                config,
+                stream_mode="messages",
+            ):
+                if isinstance(chunk, AIMessage):  # Filter to just model responses
+                    yield f"data: {json.dumps({'response': chunk.content})}\n\n"
+                    time.sleep(0.1)
 
     @app.route('/stream', methods=['POST'])
     def stream():
