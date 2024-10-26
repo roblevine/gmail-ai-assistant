@@ -15,6 +15,7 @@ from langgraph.graph import START, MessagesState, StateGraph
 
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_ollama.llms import OllamaLLM
 
 logger = logging.getLogger('.')
 logger.setLevel('DEBUG')
@@ -42,7 +43,8 @@ def create_app(test_config=None):
     )
 
     #model = ChatOpenAI(model="gpt-3.5-turbo")
-    model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
+    #model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
+    model = OllamaLLM(model="llama3", base_url="http://core:11434")
 
     # Define the function that calls the model
     def call_model(state: MessagesState):
@@ -74,17 +76,17 @@ def create_app(test_config=None):
         
         return jsonify({'response': answer})
 
-
     def generate_response(user_input):
-        messages = [HumanMessage(user_input)]
-        
-        for chunk, metadata in chat_app.stream(
-            {"messages": messages, "language": language},
+        messages = [HumanMessage(user_input)]    
+        for chunk in chat_app.stream(
+            {"messages": messages},
             config,
-            stream_mode="messages",
         ):
-            if isinstance(chunk, AIMessage):  # Filter to just model responses
-                yield f"data: {json.dumps({'response': chunk.content})}\n\n"
+            #if isinstance(chunk, AIMessage):  # Filter to just model responses
+             #   yield f"data: {json.dumps({'response': chunk.content})}\n\n"
+        #        yield f"data: {json.dumps({'response': chunk.messages[-1]})}\n\n"
+              #  print(chunk['model']['message'][-1])
+                yield f"data: {json.dumps({'response': chunk['model']['messages']})}\n\n"
                 time.sleep(0.1)
 
     @app.route('/stream', methods=['POST'])
