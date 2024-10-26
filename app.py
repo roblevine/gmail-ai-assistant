@@ -44,7 +44,8 @@ def create_app(test_config=None):
 
     #model = ChatOpenAI(model="gpt-3.5-turbo")
     #model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
-    model = OllamaLLM(model="llama3", base_url="http://core:11434")
+    ollama_url = os.getenv("OLLAMA_URL")
+    model = OllamaLLM(model="llama3", base_url=ollama_url)
 
     # Define the function that calls the model
     def call_model(state: MessagesState):
