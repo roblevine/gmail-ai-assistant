@@ -38,3 +38,8 @@ Ensure Ollama on the host is set to listen on relevant interfaces (not just loop
 $env:OLLAMA_HOST="0.0.0.0"
 ollama serve
 ```
+
+```zsh
+export OLLAMA_HOST="0.0.0.0"
+ollama serve
+```

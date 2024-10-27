@@ -47,6 +47,7 @@ def create_app(test_config=None):
     ollama_url = os.getenv("OLLAMA_URL")
     #model = OllamaLLM(model="llama3", base_url=ollama_url)
     model = OllamaLLM(model="mistral", base_url=ollama_url)
+    #model = OllamaLLM(model="phi3:medium", base_url=ollama_url)
 
     # Define the function that calls the model
     def call_model(state: MessagesState):
