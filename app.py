@@ -42,10 +42,11 @@ def create_app(test_config=None):
         ]
     )
 
-    model = ChatOpenAI(model="gpt-3.5-turbo")
+    #model = ChatOpenAI(model="gpt-3.5-turbo")
     #model = ChatAnthropic(model="claude-3-5-sonnet-20240620")
-    #ollama_url = os.getenv("OLLAMA_URL")
+    ollama_url = os.getenv("OLLAMA_URL")
     #model = OllamaLLM(model="llama3", base_url=ollama_url)
+    model = OllamaLLM(model="mistral", base_url=ollama_url)
 
     # Define the function that calls the model
     def call_model(state: MessagesState):
