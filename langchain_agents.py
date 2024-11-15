@@ -1,15 +1,24 @@
 from langchain.agents import initialize_agent, Tool, AgentType
 from langchain.memory import ConversationBufferMemory
+from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from typing import Optional
-import os
 import subprocess
+import os
 
-# Initialize models and tools
-llm = ChatAnthropic(model="claude-3-sonnet-20240229")
+# Function to initialize the LLM based on user choice
+def get_llm(model_name: str):
+    if model_name == "openai":
+        return ChatOpenAI(model_name="gpt-3.5-turbo")
+    elif model_name == "anthropic":
+        return ChatAnthropic(model="claude-3")
+    else:
+        raise ValueError("Unsupported model name. Choose 'openai' or 'anthropic'.")
+
+llm = get_llm("openai")
+
 search = DuckDuckGoSearchRun()
 
 @tool
