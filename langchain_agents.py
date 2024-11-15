@@ -2,6 +2,7 @@ from langchain.agents import initialize_agent, Tool, AgentType
 from langchain.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from langchain_ollama import OllamaLLM
 from langchain.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -14,10 +15,16 @@ def get_llm(model_name: str):
         return ChatOpenAI(model_name="gpt-3.5-turbo")
     elif model_name == "anthropic":
         return ChatAnthropic(model="claude-3")
+    elif model_name == "mistral":
+        ollama_url = os.getenv("OLLAMA_URL")
+        return OllamaLLM(model="mistral", base_url=ollama_url)
+    elif model_name == "llama3":
+        ollama_url = os.getenv("OLLAMA_URL")
+        return OllamaLLM(model="llama3", base_url=ollama_url)
     else:
-        raise ValueError("Unsupported model name. Choose 'openai' or 'anthropic'.")
+        raise ValueError("Unsupported model name. Choose 'openai', 'anthropic', 'mistral', or 'llama3'.")
 
-llm = get_llm("openai")
+llm = get_llm("mistral")
 
 search = DuckDuckGoSearchRun()
 
