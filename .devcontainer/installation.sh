@@ -12,7 +12,10 @@ python3 -m venv .venv
 echo "activate virtual environment" 
 source .venv/bin/activate
 
+echo "upgrade pip"
+python -m pip install -U pip
+
 echo "install requirements"
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
 echo "installation script complete"
