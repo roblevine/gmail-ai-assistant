@@ -14,3 +14,4 @@ langchain
 langchain_community
 bs4
 typing_extensions
+duckduckgo-search
