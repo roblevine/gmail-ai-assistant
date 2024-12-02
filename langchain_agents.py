@@ -21,10 +21,13 @@ def get_llm(model_name: str):
     elif model_name == "llama3":
         ollama_url = os.getenv("OLLAMA_URL")
         return OllamaLLM(model="llama3", base_url=ollama_url)
+    elif model_name == "phi3":
+        ollama_url = os.getenv("OLLAMA_URL")
+        return OllamaLLM(model="phi3:medium", base_url=ollama_url)
     else:
-        raise ValueError("Unsupported model name. Choose 'openai', 'anthropic', 'mistral', or 'llama3'.")
+        raise ValueError("Unsupported model name. Choose 'openai', 'anthropic', 'mistral', 'llama3', or 'phi3'.")
 
-llm = get_llm("mistral")
+llm = get_llm("phi3")
 
 search = DuckDuckGoSearchRun()
 
